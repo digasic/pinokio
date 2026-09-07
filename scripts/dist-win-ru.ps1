@@ -153,7 +153,7 @@ $asarMb = (Get-Item (Join-Path $unpacked 'resources\app.asar')).Length / 1MB
 Write-Host ("OK app.asar {0:N1} MB" -f $asarMb)
 if ($asarMb -gt 250) { throw "app.asar too large: $asarMb MB" }
 
-# Also verify AUMID string in asar after pack
+# Sanity: packed asar has upstream entrypoints
 $asarCli = Join-Path $Root 'node_modules\@electron\asar\bin\asar.js'
 $tmpMain = Join-Path $env:TEMP 'pinokio-dist-main-check.js'
 Push-Location (Split-Path $tmpMain)
@@ -161,9 +161,8 @@ try {
   if (Test-Path '.\main.js') { Remove-Item '.\main.js' -Force }
   & node.exe $asarCli extract-file (Join-Path $unpacked 'resources\app.asar') main.js
   $mainTxt = Get-Content '.\main.js' -Raw
-  if ($mainTxt -notmatch 'computer\.pinokio') { throw 'packed asar missing computer.pinokio AUMID' }
-  if ($mainTxt -match "setAppUserModelId\('Pinokio'\)") { throw 'packed asar still has wrong AUMID Pinokio' }
-  Write-Host 'OK asar AUMID computer.pinokio'
+  if ($mainTxt -notmatch "require\('\./minimal'\)") { throw 'packed asar missing minimal mode require' }
+  Write-Host 'OK asar entrypoints (upstream main.js)'
 } finally {
   Pop-Location
 }

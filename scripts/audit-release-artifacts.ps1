@@ -33,10 +33,16 @@ Set-Location $Work
 $main = Get-Content (Join-Path $Work 'main.js') -Raw
 $src = Get-Content (Join-Path $Root 'main.js') -Raw
 
-Write-Host '=== AUMID ==='
-if ($src -match 'computer\.pinokio') { Write-Host 'OK source has computer.pinokio' } else { Write-Host 'FAIL source missing AUMID' }
-if ($main -match 'computer\.pinokio') { Write-Host 'OK release asar has computer.pinokio' } else { Write-Host 'FAIL release asar STALE — no AUMID fix' }
-if ($main -match "setAppUserModelId\('Pinokio'\)") { Write-Host 'FAIL release still setAppUserModelId(Pinokio)' }
+Write-Host '=== upstream entrypoints ==='
+if ($src -match "require\('\./minimal'\)") { Write-Host 'OK source main.js' } else { Write-Host 'FAIL source main.js' }
+if ($main -match "require\('\./minimal'\)") { Write-Host 'OK asar main.js' } else { Write-Host 'FAIL asar main.js' }
+& node.exe $AsarCli extract-file $Asar minimal.js
+$min = Get-Content (Join-Path $Work 'minimal.js') -Raw
+if ($min -match 'showNotification' -and $min -match 'shell\.openExternal\(rootUrl\)') {
+  Write-Host 'OK asar minimal.js has upstream toast + auto-open'
+} else {
+  Write-Host 'FAIL asar minimal.js cut from upstream'
+}
 
 Write-Host ("asarMB={0:N1}" -f ((Get-Item $Asar).Length/1MB))
 Write-Host ("pkgVer=" + (Get-Content (Join-Path $Root 'package.json') -Raw | ConvertFrom-Json).version)

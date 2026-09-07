@@ -138,24 +138,9 @@ if (!gotTheLock) {
   app.quit()
 }
 
-const openHttpExternal = async (url) => {
-  if (!url || typeof url !== 'string') return
-  const trimmed = url.trim()
-  // Only http(s). File/protocol without handler → Windows OpenWith.exe ("Выбор приложения").
-  if (!/^https?:\/\//i.test(trimmed)) {
-    console.warn('[minimal] refuse openExternal non-http URL:', trimmed)
-    return
-  }
-  try {
-    await shell.openExternal(trimmed)
-  } catch (err) {
-    console.warn('[minimal] openExternal failed:', err && err.message ? err.message : err)
-  }
-}
-
 app.on('second-instance', () => {
   if (rootUrl) {
-    openHttpExternal(rootUrl)
+    shell.openExternal(rootUrl)
   }
 })
 
@@ -201,7 +186,7 @@ app.whenReady().then(async () => {
           if (!url) {
             return { ok: false, error: 'missing-url', surface_used: 'browser' }
           }
-          await openHttpExternal(url)
+          await Promise.resolve(shell.openExternal(url))
           return {
             ok: true,
             surface_used: 'browser'
@@ -233,45 +218,32 @@ app.whenReady().then(async () => {
   rootUrl = `http://localhost:${pinokiod.port}`
   if (process.platform === 'darwin') app.dock.hide();
   const assetsRoot = app.isPackaged ? process.resourcesPath : __dirname
-  const iconCandidates = [
-    path.resolve(assetsRoot, 'assets/icon_small.png'),
-    path.resolve(assetsRoot, 'assets/icon.png'),
-    path.resolve(assetsRoot, 'assets/icon.ico'),
-    path.join(__dirname, 'assets/icon_small.png'),
-    path.join(__dirname, 'assets/icon.png'),
-    path.join(__dirname, 'build/icon.ico'),
-  ]
-  let iconPath = iconCandidates[0]
-  let icon = nativeImage.createEmpty()
-  for (const candidate of iconCandidates) {
-    if (!fs.existsSync(candidate)) continue
-    // createFromPath fails for files inside asar; prefer disk, else buffer
-    let next = nativeImage.createFromPath(candidate)
-    if (next.isEmpty()) {
-      try {
-        next = nativeImage.createFromBuffer(fs.readFileSync(candidate))
-      } catch (_) {}
-    }
-    if (!next.isEmpty()) {
-      iconPath = candidate
-      icon = next
-      break
-    }
-  }
-  if (!icon.isEmpty()) {
-    icon = icon.resize({ height: 24, width: 24 })
-  } else {
-    console.warn('Tray icon missing/empty; tried:', iconCandidates.join(' | '))
-  }
+  const iconPath = path.resolve(assetsRoot, "assets/icon_small.png")
+  let icon = nativeImage.createFromPath(iconPath)
+  icon = icon.resize({
+    height: 24,
+    width: 24 
+  });
   console.log('Tray icon path:', iconPath, 'isEmpty:', icon.isEmpty()); // if true, image failed to load
   tray = new Tray(icon)
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Open in Browser', click: () => openHttpExternal(rootUrl) },
+    { label: 'Open in Browser', click: () => shell.openExternal(rootUrl) },
     { label: 'Restart', click: () => { app.relaunch(); app.exit(); } },
     { label: 'Quit', click: () => app.quit() }
   ]);
   tray.setToolTip('Pinokio');
   tray.setContextMenu(contextMenu);
+  const showNotification = (options = {}) => {
+    try {
+      new Notification({
+        title: 'Pinokio',
+        body: 'Running in background',
+        ...options
+      }).show()
+    } catch (err) {
+      console.warn('Failed to show background notification', err)
+    }
+  }
   const announceTray = () => {
     const platformHandlers = {
       darwin: () => {
@@ -283,26 +255,18 @@ app.whenReady().then(async () => {
         } catch (err) {
           console.warn('Failed to signal tray/notification on macOS', err)
         }
-        try {
-          new Notification({ title: 'Pinokio', body: 'Running in background' }).show()
-        } catch (err) {
-          console.warn('Failed to show background notification', err)
-        }
+        showNotification()
       },
       win32: () => {
-        // Do NOT use Electron Notification on Windows here.
-        // Mismatched Start Menu AUMID → Windows spawns OpenWith.exe ("Выбор приложения").
-        // Tray icon + tooltip is enough for background presence.
         try {
-          tray.setToolTip('Pinokio — running in background')
-        } catch (_) {}
+          app.setAppUserModelId('Pinokio')
+        } catch (err) {
+          console.warn('Failed to set AppUserModelID', err)
+        }
+        showNotification({ icon: iconPath })
       },
       default: () => {
-        try {
-          new Notification({ title: 'Pinokio', body: 'Running in background' }).show()
-        } catch (err) {
-          console.warn('Failed to show background notification', err)
-        }
+        showNotification()
       }
     }
     const handler = platformHandlers[process.platform] || platformHandlers.default
@@ -312,8 +276,7 @@ app.whenReady().then(async () => {
   tray.on('click', () => {
     tray.popUpContextMenu(contextMenu);
   });
-  // Open UI in browser only on user action (tray menu). Auto-open on start caused
-  // OpenWith storms when browser assoc / AUMID / multi-instance went sideways.
+  shell.openExternal(rootUrl);
   hiddenWindow = new BrowserWindow({ show: false });
 
   updater.run(hiddenWindow)

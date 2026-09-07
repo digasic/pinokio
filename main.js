@@ -3,17 +3,6 @@ const Pinokiod = require("pinokiod")
 const config = require('./config')
 const pinokiod = new Pinokiod(config)
 
-// Must match package.json build.appId / NSIS Start Menu shortcut AUMID.
-// Wrong id → Windows toast/taskbar can't bind to shortcut → "Выбор приложения" (OpenWith.exe).
-const APP_USER_MODEL_ID = 'computer.pinokio'
-if (process.platform === 'win32') {
-  try {
-    app.setAppUserModelId(APP_USER_MODEL_ID)
-  } catch (err) {
-    console.warn('setAppUserModelId failed', err)
-  }
-}
-
 if (process.platform === 'linux') {
   console.log('[PINOKIO DEBUG] Linux startup')
   console.log('[PINOKIO DEBUG] ELECTRON_OZONE_PLATFORM_HINT:', process.env.ELECTRON_OZONE_PLATFORM_HINT || '<unset>')

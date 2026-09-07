@@ -9,7 +9,7 @@ Upstream: [pinokiocomputer/pinokio](https://github.com/pinokiocomputer/pinokio).
 | | |
 |--|--|
 | Приложение (splash) | **8.2.0** |
-| GitHub tag | **`v8.2.0-RU.v5`** |
+| GitHub tag | **`v8.2.0-RU.v6`** |
 | Релиз | https://github.com/digasic/pinokio/releases |
 
 Артефакты: `Pinokio-RU-Setup.exe`, `Pinokio-RU-Portable.exe`.
@@ -44,8 +44,7 @@ powershell -ExecutionPolicy Bypass -File scripts\smoke-installed-ru.ps1
 
 - `npmRebuild: true` + `scripts/patch-natives-gyp.js` (Spectre / MSB8040)
 - `after-pack.js`: icon + natives + size gate
-- `main.js`: `AppUserModelId = computer.pinokio`
-- `minimal.js` (background): без Win toast / auto-openExternal
+- runtime shell = upstream (toast / openExternal / auto-open не трогаем)
 
 ## Mode
 

@@ -32,7 +32,7 @@
     "productName": "Pinokio",
     "copyright": "Copyright © Pinokio / digasic RU fork",
     "icon": "build/icon.ico",
-    "buildVersion": "5",
+    "buildVersion": "6",
     "npmRebuild": true,
     "afterPack": "after-pack.js",
     "afterSign": "electron-builder-notarize",
