@@ -9,7 +9,7 @@ Upstream: [pinokiocomputer/pinokio](https://github.com/pinokiocomputer/pinokio).
 | | |
 |--|--|
 | Приложение (splash) | **8.2.0** |
-| GitHub tag | **`v8.2.0+RU.v5`** |
+| GitHub tag | **`v8.2.0-RU.v5`** |
 | Релиз | https://github.com/digasic/pinokio/releases |
 
 Артефакты: `Pinokio-RU-Setup.exe`, `Pinokio-RU-Portable.exe`.
