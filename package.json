@@ -1,9 +1,9 @@
 {
   "name": "Pinokio",
   "private": true,
-  "version": "8.2.0",
-  "homepage": "https://pinokio.co",
-  "description": "pinokio",
+  "version": "8.2.0-ru.1",
+  "homepage": "https://github.com/digasic/pinokio",
+  "description": "Pinokio with Russian UI (digasic fork)",
   "main": "main.js",
   "email": "cocktailpeanuts@proton.me",
   "author": "https://twitter.com/cocktailpeanut",
@@ -35,7 +35,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "pinokiocomputer",
+        "owner": "digasic",
         "repo": "pinokio"
       }
     ],
@@ -56,7 +56,13 @@
       "node_modules/toasted-notifier/vendor/mac.noindex/**/*"
     ],
     "nsis": {
-      "include": "build/installer.nsh"
+      "include": "build/installer.nsh",
+      "artifactName": "Pinokio-RU-Setup.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "portable": {
+      "artifactName": "Pinokio-RU-Portable.${ext}"
     },
     "extraResources": [
       "./script/**",
@@ -142,13 +148,19 @@
       ]
     },
     "win": {
-      "artifactName": "Pinokio.${ext}",
+      "artifactName": "Pinokio-RU-${version}.${ext}",
       "signtoolOptions": {
         "sign": "./build/sign.js"
       },
       "target": [
         {
           "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
           "arch": [
             "x64"
           ]
