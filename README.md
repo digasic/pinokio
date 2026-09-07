@@ -1,39 +1,56 @@
 # Pinokio (digasic) — Russian UI shell
 
-Electron shell fork paired with **[digasic/pinokiod](https://github.com/digasic/pinokiod)** (Russian UI i18n).
+Electron-оболочка для **[digasic/pinokiod](https://github.com/digasic/pinokiod)** (русский UI).
 
 Upstream: [pinokiocomputer/pinokio](https://github.com/pinokiocomputer/pinokio).
 
-## Sibling layout (required for local `file:` dep)
+## Версии
+
+| | |
+|--|--|
+| Приложение (splash) | **8.2.0** |
+| GitHub tag | **`v8.2.0+RU.v5`** |
+| Релиз | https://github.com/digasic/pinokio/releases |
+
+Артефакты: `Pinokio-RU-Setup.exe`, `Pinokio-RU-Portable.exe`.
+
+## Sibling layout
 
 ```
 pinokio-ru/
-  pinokiod/     # https://github.com/digasic/pinokiod
-  pinokio/      # this repo — "pinokiod": "file:../pinokiod"
+  pinokiod/   # digasic/pinokiod
+  pinokio/    # this repo — "pinokiod": "file:../pinokiod"
 ```
 
 ```powershell
 git clone https://github.com/digasic/pinokiod.git
 git clone https://github.com/digasic/pinokio.git
 cd pinokio
-npm install --ignore-scripts
+npm install
 npx electron .
 ```
 
-Docs: [pinokiod/docs/I18N_RU.md](https://github.com/digasic/pinokiod/blob/main/docs/I18N_RU.md)
+Документация i18n: [pinokiod/docs/I18N_RU.md](https://github.com/digasic/pinokiod/blob/main/docs/I18N_RU.md)
 
-## Patch stock Windows installer
+## Windows release build
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File ..\pinokiod\scripts\patch-installed-ru.ps1
+powershell -ExecutionPolicy Bypass -File scripts\dist-win-ru.ps1
+powershell -ExecutionPolicy Bypass -File scripts\install-unpacked-ru.ps1   # NSIS /S
+powershell -ExecutionPolicy Bypass -File scripts\smoke-installed-ru.ps1
 ```
 
-## Mode / tray
+Важное:
 
-- **desktop** — normal window (taskbar)
-- **background** — tray-only (`minimal.js`), UI in browser
+- `npmRebuild: true` + `scripts/patch-natives-gyp.js` (Spectre / MSB8040)
+- `after-pack.js`: icon + natives + size gate
+- `main.js`: `AppUserModelId = computer.pinokio`
+- `minimal.js` (background): без Win toast / auto-openExternal
 
-There is no separate “minimize window to tray” toggle.
+## Mode
+
+- **desktop** — окно
+- **background** — tray, UI в браузере
 
 ---
 

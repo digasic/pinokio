@@ -1,5 +1,9 @@
 node_modules
-dist
+/dist
+/dist-*/
 cache
 package-lock.json
 .claude
+*.log
+_eb-win-ru.json
+_tmp*

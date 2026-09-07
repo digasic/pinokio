@@ -1,7 +1,7 @@
 {
   "name": "Pinokio",
   "private": true,
-  "version": "8.2.0-ru.1",
+  "version": "8.2.0",
   "homepage": "https://github.com/digasic/pinokio",
   "description": "Pinokio with Russian UI (digasic fork)",
   "main": "main.js",
@@ -13,7 +13,9 @@
     "test:user-agent": "node script/run-user-agent-test.js",
     "test:update-banner": "node script/run-update-banner-test.js",
     "postinstall": "electron-builder install-app-deps",
+    "rebuild:natives": "electron-builder install-app-deps",
     "pack": "./node_modules/.bin/electron-builder --dir",
+    "dist:win": "node ./node_modules/electron-builder/cli.js --win --x64",
     "eject": "hdiutil info | grep '/dev/disk' | awk '{print $1}' | xargs -I {} hdiutil detach {}",
     "l": "docker run --rm -ti -v $PWD:/project -w /project -e SNAPCRAFT_BUILD_ENVIRONMENT=host -e SNAP_DESTRUCTIVE_MODE=true electronuserland/builder bash -lc 'rm -rf node_modules && npm install && npm run monkeypatch && ./node_modules/.bin/electron-builder install-app-deps && ./node_modules/.bin/electron-builder -l'",
     "mw": "rm -rf node_modules && npm install && npm run monkeypatch && ./node_modules/.bin/electron-builder install-app-deps && ./node_modules/.bin/electron-builder -mw && npm run zip",
@@ -27,11 +29,39 @@
   },
   "build": {
     "appId": "computer.pinokio",
+    "productName": "Pinokio",
+    "copyright": "Copyright © Pinokio / digasic RU fork",
+    "icon": "build/icon.ico",
+    "buildVersion": "5",
+    "npmRebuild": true,
     "afterPack": "after-pack.js",
     "afterSign": "electron-builder-notarize",
     "directories": {
-      "output": "dist-${platform}"
+      "output": "dist-${platform}",
+      "buildResources": "build"
     },
+    "files": [
+      "**/*",
+      "!_tmp*",
+      "!_eb-*.json",
+      "!temp/**",
+      "!dist-*/**",
+      "!after-pack.js",
+      "!chmod.js",
+      "!wrap-linux-launcher.js",
+      "!patch-linux-arm64-natives.js",
+      "!linux_build.sh",
+      "!*.md",
+      "!icon-old.png",
+      "!icon2.png",
+      "!install.png",
+      "!scripts/**",
+      "!node_modules/pinokiod/test/**",
+      "!node_modules/pinokiod/docs/**",
+      "!node_modules/pinokiod/scripts/**",
+      "!**/*.{pdb,iobj,ipdb,obj}",
+      "!**/prebuilds/linux-*/**"
+    ],
     "publish": [
       {
         "provider": "github",
@@ -47,19 +77,28 @@
       "node_modules/koffi/**/*",
       "node_modules/@koromix/koffi-*/**/*",
       "node_modules/better-sqlite3/**/*",
+      "node_modules/@parcel/watcher*/**/*",
       "node_modules/pinokiod/server/public/**/*",
       "node_modules/pinokiod/server/scripts/**/*",
       "node_modules/pinokiod/system/**/*",
+      "node_modules/pinokiod/node_modules/@homebridge/**/*",
       "node_modules/pinokiod/node_modules/better-sqlite3/**/*",
       "node_modules/pinokiod/node_modules/koffi/**/*",
       "node_modules/pinokiod/node_modules/@koromix/koffi-*/**/*",
+      "node_modules/pinokiod/node_modules/@parcel/watcher*/**/*",
       "node_modules/toasted-notifier/vendor/mac.noindex/**/*"
     ],
     "nsis": {
       "include": "build/installer.nsh",
       "artifactName": "Pinokio-RU-Setup.${ext}",
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Pinokio",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
     },
     "portable": {
       "artifactName": "Pinokio-RU-Portable.${ext}"
@@ -69,6 +108,14 @@
       {
         "from": "assets/icon_small.png",
         "to": "assets/icon_small.png"
+      },
+      {
+        "from": "assets/icon.png",
+        "to": "assets/icon.png"
+      },
+      {
+        "from": "build/icon.ico",
+        "to": "assets/icon.ico"
       }
     ],
     "protocols": [
@@ -148,10 +195,10 @@
       ]
     },
     "win": {
+      "icon": "build/icon.ico",
       "artifactName": "Pinokio-RU-${version}.${ext}",
-      "signtoolOptions": {
-        "sign": "./build/sign.js"
-      },
+      "signAndEditExecutable": false,
+      "verifyUpdateCodeSignature": false,
       "target": [
         {
           "target": "nsis",
@@ -180,6 +227,7 @@
     "@electron/rebuild": "3.2.10",
     "electron": "39.2.3",
     "electron-builder": "26.2.0",
-    "electron-builder-notarize": "^1.5.2"
+    "electron-builder-notarize": "^1.5.2",
+    "rcedit": "^4.0.1"
   }
 }
